@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <style media="screen">
+      #messageList {
+        word-wrap: normal;
+        width: 20%;
+        height: 300px;
+        overflow: auto;
+        border: 1px solid black;
+        padding: 10px;
+        margin: 10px;
+        font-size: 100%;
+      }
+      #timeText {
+        color: blue;
+        font-size: 75%;
+        text-align: right;
+      }
+      #textbox {
+        margin-left: 10px;
+        width: 18%;
+      }
+    </style>
+    <meta charset="utf-8">
+    <title>Messaging Prototype</title>
+    <h1>Messaging Prototype</h1>
+  </head>
+  <body>
+    <div id="messageList">
+    </div>
+  </body>
+  <br>
+  <input type="text" id="textbox" value="">
+  <input type="button" id="Send" onclick="sendMessage(textbox.value)" value="Send">
+</html>
+<script src="messaging.js"></script>
