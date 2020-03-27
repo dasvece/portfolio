@@ -152,6 +152,7 @@ function updateGameArea() {
 
 
   if (!gameOver && gameStarted == true){
+  container.appendChild(myGameArea.canvas);
   score += 1;
   myGameArea.clear();
   myGameArea.frameNo += 1;
