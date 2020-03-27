@@ -8,6 +8,9 @@ var gameStarted = false;
 var score = 0;
 var frequency = 100; //every 100 frames.
 var maxFrequency = 50;
+var highScore = 0;
+var maxScore = 99999;
+
 function startGame() {
     myGamePiece = new component(75, 75, "dino.png", 20, 120, "image");
     restartButton = new component(75, 75, "restart.png", 425, 100, "image");
@@ -177,7 +180,11 @@ function updateGameArea() {
   myGamePiece.newPos();
   myGamePiece.update();
   ctx.font = "30px Arial";
-  ctx.strokeText(score, 850, 30); //scoreboard
+  ctx.fillText(score, 900, 30); //scoreboard
+  if(score > maxScore){score = maxScore;}
+  ctx.font = "30px Arial";
+  ctx.strokeText("HI " + highScore, 750, 30);
+  if(score > highScore){highScore = score;}
   ctx.fillRect(0, 210, 1000, 2)
   ctx.fillStyle = "#535353"
 } else {
