@@ -10,6 +10,8 @@ var frequency = 100; //every 100 frames.
 var maxFrequency = 50;
 var highScore = 0;
 var maxScore = 99999;
+var container = document.getElementById("container");
+
 
 function startGame() {
     myGamePiece = new component(75, 75, "dino.png", 20, 120, "image");
@@ -188,6 +190,7 @@ function updateGameArea() {
   ctx.fillRect(0, 210, 1000, 2)
   ctx.fillStyle = "#535353"
 } else {
+  container.appendChild(myGameArea.canvas);
   myGamePiece.update();
   ctx.font = "50px Arial";
   ctx.fillText("Jump to Start", 325, 75);
@@ -217,7 +220,4 @@ function clearmove() {
     myGamePiece.speedX = 0;
     myGamePiece.speedY = 0;
 }
-
-
-
 window.addEventListener("keydown", doKeyDown, false);
