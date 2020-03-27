@@ -4,17 +4,20 @@ var grounded = false;
 var obstacleSpeed;
 var myObstacles = [];
 var gameOver = false;
+var gameStarted = false;
 var score = 0;
-var cLeft, cTop;
-
+var frequency = 100; //every 100 frames.
+var maxFrequency = 50;
 function startGame() {
     myGamePiece = new component(75, 75, "dino.png", 20, 120, "image");
     restartButton = new component(75, 75, "restart.png", 425, 100, "image");
+    jumpSound = new sound("jump.mp3");
     myGamePiece.gravity = 0.1;
     myObstacles = [];
     score = 0;
     obstacleSpeed = -7;
     gameOver = false;
+    frequency = 100;
     myGameArea.start();
 }
 
@@ -28,8 +31,6 @@ var myGameArea = {
         this.frameNo = 0;
         this.interval = setInterval(updateGameArea, 20); //updates game 50 times per second.
         var ctx = this.canvas.getContext("2d");
-        cLeft = this.canvas.offsetLeft,
-        cTop = this.canvas.offsetTop;
         },
     clear : function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -107,7 +108,13 @@ function everyinterval(n) {
 
 
 function doKeyDown(e){
+  if(e.keyCode == 32 && gameStarted == false || e.keyCode == 87 && gameStarted == false || e.keyCode == 38 && gameStarted == false){
+      jumpSound.play();
+      myGamePiece.speedY -= 25;
+      gameStarted = true;
+  }
   if (e.keyCode == 32 && grounded == true || e.keyCode == 87 && grounded == true || e.keyCode == 38 && grounded == true) { //includes spacebar, w, up arrow
+    jumpSound.play();
     grounded = false;
     myGamePiece.speedY -= 25;
     console.log(myGamePiece.speedY);
@@ -138,11 +145,14 @@ function updateGameArea() {
     }
   }
 
-  if (!gameOver){
+
+  if (!gameOver && gameStarted == true){
   score += 1;
   myGameArea.clear();
   myGameArea.frameNo += 1;
-  if (myGameArea.frameNo == 1 || everyinterval(150)) {
+  if(myGameArea.frameNo == 1 || everyinterval(400)) {frequency -= 5; console.log("obstacle frequency " + frequency);
+  if(frequency <= maxFrequency){frequency = maxFrequency;}}
+  if (myGameArea.frameNo == 1 || everyinterval(frequency)) {
     x = myGameArea.canvas.width;
     y = myGameArea.canvas.height - 200
     rNumber = Math.floor(Math.random() * 3) + 1;
@@ -170,6 +180,29 @@ function updateGameArea() {
   ctx.strokeText(score, 850, 30); //scoreboard
   ctx.fillRect(0, 210, 1000, 2)
   ctx.fillStyle = "#535353"
+} else {
+  myGamePiece.update();
+  ctx.font = "50px Arial";
+  ctx.fillText("Jump to Start", 325, 75);
+  ctx.font = "20px Arial";
+  ctx.fillText("Jump: W | Space | UP", 375, 110);
+  ctx.fillRect(0, 210, 1000, 2)
+  ctx.fillStyle = "#535353"
+}
+}
+
+function sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function (){
+    this.sound.play();
+  }
+  this.stop = function(){
+    this.sound.pause();
   }
 }
 
@@ -177,5 +210,7 @@ function clearmove() {
     myGamePiece.speedX = 0;
     myGamePiece.speedY = 0;
 }
+
+
 
 window.addEventListener("keydown", doKeyDown, false);
