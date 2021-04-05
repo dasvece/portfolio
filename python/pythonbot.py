@@ -5,10 +5,8 @@ import asyncio
 
 bot = commands.Bot(command_prefix=";")
 
-currently_voting = False
-# current_nominations = []
-# current_nominations_image = []
-roundTime = 6
+
+roundTime = 30
 emoji1 = "1️⃣"
 emoji2 = "2️⃣"
 
@@ -27,7 +25,7 @@ async def instructions(ctx):
                           description='The prefix for this bot is ";"',
                           color=16580705)
     embed.add_field(name="1.", value='Always put your full nomination in quotations ("")', inline=True)
-    embed.add_field(name="2.", value='Nomination example: ;nominate "Your Nomination | Show They\'re from"',
+    embed.add_field(name="2.", value='Nomination example: ;nominate "Your Nomination | Origin"',
                     inline=True)
     await ctx.send(embed=embed)
 
@@ -43,19 +41,29 @@ async def nominate(ctx, nomination):
                               description=nomination + " was added to the nominees list.")
         cur_nom[nomination] = ""
         await ctx.send(embed=embed)
-        embed = discord.Embed(title="Please assign an image to " + nomination, description="Please use web links only.")
+        embed = discord.Embed(title="Please assign an image to " + nomination, description="Web links or uploaded images are accepted.")
         await ctx.send(embed=embed)
 
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel  # Checks to see if the image posted is by the same User in the same Channel
 
-        image = await bot.wait_for('message', check=check)
-        embed = discord.Embed(title="Image Added",
-                              description="Your image has been added successfully")
-        embed.set_thumbnail(url=image.content)
-        cur_nom[nomination] = image.content
-        await ctx.send(embed=embed)
-        print(cur_nom)
+        message = await bot.wait_for('message', check=check)
+        if message.attachments:
+            image = message.attachments[0].url
+            embed = discord.Embed(title="Image Added",
+                                  description="Your image has been added successfully")
+            embed.set_thumbnail(url=image)
+            cur_nom[nomination] = image
+            await ctx.send(embed=embed)
+            print(cur_nom)
+        else:
+            image = message.content
+            embed = discord.Embed(title="Image Added",
+                                  description="Your image has been added successfully")
+            embed.set_thumbnail(url=image)
+            cur_nom[nomination] = image
+            await ctx.send(embed=embed)
+            print(cur_nom)
 
 
 @nominate.error
@@ -85,6 +93,38 @@ async def delnom_error(ctx, error):
                           color=0xff0000)
     print(error)
     await ctx.send(embed=embed)
+
+
+@bot.command()
+async def update_image(ctx, nominee):
+    if nominee in cur_nom.keys():
+        embed = discord.Embed(title=nominee + " selected. Please choose an image.")
+        embed.set_thumbnail(url=cur_nom[nominee])
+        await ctx.send(embed=embed)
+
+        def check(m):
+            return m.author == ctx.author and m.channel == ctx.channel  # Checks to see if the image posted is by the same User in the same Channel
+
+        message = await bot.wait_for('message', check=check)
+        if message.attachments:
+            image = message.attachments[0].url
+            embed = discord.Embed(title="Image Added",
+                                  description="Your image has been added successfully")
+            embed.set_thumbnail(url=image)
+            cur_nom[nominee] = image
+            await ctx.send(embed=embed)
+            print(cur_nom)
+        else:
+            image = message.content
+            embed = discord.Embed(title="Image Added",
+                                  description="Your image has been added successfully")
+            embed.set_thumbnail(url=image)
+            cur_nom[nominee] = image
+            await ctx.send(embed=embed)
+            print(cur_nom)
+    else:
+        embed = discord.Embed(title=nominee + " not found. Please check spelling and try again.")
+        await ctx.send(embed=embed)
 
 
 @bot.command()
@@ -132,7 +172,7 @@ async def tournament(ctx):
         return  # if there are none then erorr and return.
     numberofcontestants = len(cur_nom)
     embed = discord.Embed(title="Starting Vote",
-                          description="Select the reaction associated with each Waifu to vote.")
+                          description="Select the reaction associated with each contestant to vote.")
     noms = list(cur_nom.keys())  # Turn dictionary of keys into list to be able to iterate through.
     for x in range(numberofcontestants):
         embed.add_field(name=str(x), value=noms[x])
@@ -181,21 +221,21 @@ async def tournament(ctx):
                 await ctx.send(embed=embed)
                 cur_nom[b] = b_Image
             else:
-                embed = discord.Embed(title="Tie", description="Both waifus have been re-added to the voting pool",
+                embed = discord.Embed(title="Tie", description="Both contestants have been re-added to the voting pool",
                                       color=0xff0000)
                 await ctx.send(embed=embed)
                 cur_nom[a] = a_Image
                 cur_nom[b] = b_Image
     else:  # Number of contestants is odd. Time to seed a contestant.
         choice = random.choice(list(cur_nom.keys()))
-        seededWaifu = choice
-        seededWaifuImage = cur_nom[seededWaifu]
-        del cur_nom[seededWaifu]
+        seededContestant = choice
+        seededContestantImage = cur_nom[seededContestant]
+        del cur_nom[seededContestant]
         numberofcontestants = len(list(cur_nom.keys()))
         numberofrounds = numberofcontestants // 2
         embed = discord.Embed(title="Number of rounds: " + str(numberofrounds),
-                              description=seededWaifu + " is Seeded.")
-        embed.set_thumbnail(url=seededWaifuImage)
+                              description=seededContestant + " is Seeded.")
+        embed.set_thumbnail(url=seededContestantImage)
         await ctx.send(embed=embed)
         for x in range(numberofrounds):
             print(cur_nom.items())
@@ -235,15 +275,15 @@ async def tournament(ctx):
                 await ctx.send(embed=embed)
                 cur_nom[b] = b_Image
             else:
-                embed = discord.Embed(title="Tie", description="Both waifus have been re-added to the voting pool",
+                embed = discord.Embed(title="Tie", description="Both Contestants have been re-added to the voting pool",
                                       color=0xff0000)
                 await ctx.send(embed=embed)
                 cur_nom[a] = a_Image
                 cur_nom[b] = b_Image
-        if seededWaifu in cur_nom.keys():
+        if seededContestant in cur_nom.keys():
             return
         else:
-            cur_nom[seededWaifu] = seededWaifuImage
+            cur_nom[seededContestant] = seededContestantImage
 
 
 bot.run("")
